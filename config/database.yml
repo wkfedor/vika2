@@ -1,0 +1,8 @@
+development:
+  adapter: postgresql
+  encoding: unicode
+  database: read_messages_from_group
+  username: postgres
+  password: 1234
+  host: localhost
+  port: 5432
