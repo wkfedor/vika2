@@ -1,7 +1,12 @@
 # lib/logger.rb
-module Logger
+
+module AppLogger
   def log_info(message)
     puts "[INFO] [#{Time.now}] #{message}"
+  end
+
+  def log_debug(message)
+    puts "[DEBUG] [#{Time.now}] #{message}"
   end
 
   def log_error(exception, context: "")
@@ -9,7 +14,5 @@ module Logger
     puts exception.backtrace.join("\n") if exception.backtrace
   end
 
-  def log_debug(message)
-    puts "[DEBUG] [#{Time.now}] #{message}"
-  end
+  module_function :log_info, :log_debug, :log_error
 end

@@ -2,7 +2,7 @@
 require_relative '../services/message_processor_service'
 
 class MessagePollerWorker
-  include Logger
+  #include Logger
 
   def initialize
     log_info("📡 Запуск MessagePollerWorker...")

@@ -1,6 +1,6 @@
 # config/boot.rb
 require 'active_record'
-require 'logger'
+require 'app_logger'
 require_relative '../models/message'
 require_relative '../models/message_item'
 require_relative '../models/message_item_source'

@@ -2,7 +2,7 @@
 require_relative '../models/message_item'
 require_relative '../models/message'
 require_relative '../models/message_item_source'
-include Logger
+include AppLogger
 
 class MessageProcessorService
   INTERVAL = 10 # секунд
