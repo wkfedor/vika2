@@ -47,7 +47,7 @@ class MessageProcessorService
     item = MessageItem.create!(
       message_source_id: source.id,
       processed_text: message.text,
-      status: "ready_to_work",
+      status: "new",
       created_at: message.date,
       updated_at: Time.now
     )
@@ -77,7 +77,7 @@ class MessageProcessorService
         grouped_id: grouped_id,
         message_source_id: source.id,
         processed_text: text,
-        status: "ready_to_work",
+        status: "new",
         created_at: first_part.date,
         updated_at: Time.now
       )
