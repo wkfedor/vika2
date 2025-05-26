@@ -5,7 +5,7 @@ require_relative '../models/message_item_source'
 include AppLogger
 
 class MessageProcessorService
-  INTERVAL = 10 # секунд
+  INTERVAL = 1 # секунд
 
   def run!
     loop do
@@ -54,11 +54,15 @@ class MessageProcessorService
 
     MessageItemSource.create!(
       message_item_id: item.id,
-      message_id: message.message_id,
+      message_id: message.id,
       group_id: message.group_id
     )
 
     message.update_columns(sent_status: true, sent_at: Time.now)
+
+    # После создания message_item собираем медиафайлы
+    collect_media_files_for(item)
+
     log_info("✅ Одиночное сообщение #{message.message_id} перенесено в message_items")
   end
 
@@ -85,11 +89,14 @@ class MessageProcessorService
       parts.each do |msg|
         MessageItemSource.create!(
           message_item_id: item.id,
-          message_id: msg.message_id,
+          message_id: msg.id,
           group_id: msg.group_id
         )
         msg.update_columns(sent_status: true, sent_at: Time.now)
       end
+
+      # После создания message_item собираем медиафайлы
+      collect_media_files_for(item)
 
       log_info("✅ Группа #{grouped_id} успешно перенесена в message_items")
 
@@ -113,4 +120,83 @@ class MessageProcessorService
       source.link = "https://t.me/c/ #{message.group_id}/#{message.message_id}"
     end
   end
+
+  # === Метод для сбора медиафайлов ===
+  def collect_media_files_for(message_item)
+    log_info("[MediaFiles] 📷 Запуск метода для MessageItem ID: #{message_item.id}")
+
+    if message_item.media_files.present?
+      log_info("[MediaFiles] ❌ media_files уже заполнен. Пропускаем.")
+      return
+    end
+
+    sources = message_item.sources
+
+    unless sources.any?
+      log_info("[MediaFiles] ❌ Нет связанных sources. Пропускаем.")
+      return
+    end
+
+    found_files = []
+    checked_dirs = [] # Массив для отслеживания всех проверенных директорий
+
+    sources.each do |source|
+      # puts "1*"*100
+      # puts source.inspect
+
+
+      group_id = source.message&.group_id
+      message_id = source.message&.message_id
+
+      # puts "2*"*100
+      # puts source.message.inspect
+      # puts message_id.inspect
+
+      next unless group_id && message_id
+
+      media_dir = "/home/feda/py/read-messages-from-group/media/group_#{group_id}/msg_#{message_id}"
+
+      # puts "3*"*100
+      # puts media_dir
+
+      checked_dirs << media_dir # Сохраняем путь для отчета
+      log_info("[MediaFiles] 🔍 Проверяем директорию: #{media_dir}")
+
+      if Dir.exist?(media_dir)
+        files = Dir.glob("#{media_dir}/*").select { |f| File.file?(f) }
+
+        if files.any?
+          relative_paths = files.map { |f| f.sub("/home/feda/py/read-messages-from-group", "") }
+          log_info("[MediaFiles] ✅ Найдено #{files.size} файла(ов):")
+          relative_paths.each { |p| log_info(" - #{p}") }
+
+          found_files.concat(relative_paths)
+        else
+          log_info("[MediaFiles] 📄 Файлы отсутствуют в директории:")
+          log_info(" - #{media_dir}")
+        end
+      else
+        log_info("[MediaFiles] 📁 Директория не найдена или недоступна:")
+        log_info(" - #{media_dir}")
+      end
+    end
+
+    if found_files.any?
+      message_item.update!(media_files: found_files.uniq.to_json)
+      log_info("[MediaFiles] ✅ media_files успешно обновлено")
+    else
+      message_item.update!(media_files: [].to_json)
+      if checked_dirs.any?
+        log_info("[MediaFiles] 🚫 Ни в одной из проверенных директорий не найдено медиафайлов:")
+        checked_dirs.each { |dir| log_info(" - #{dir}") }
+      else
+        log_info("[MediaFiles] 🚫 Нет доступных директорий для проверки (отсутствуют group_id или message_id)")
+      end
+    end
+  rescue => e
+    log_error(e, context: "[MediaFiles] ⚠️ Ошибка при обработке медиафайлов для MessageItem ID=#{message_item.id}")
+    message_item.update!(media_files: [])
+  end
+
+
 end
