@@ -16,7 +16,7 @@ Thread.new { poller.run }
 #processor = MessageProcessorWorker.new
 #Thread.new { processor.run }
 
-processor = MessageProcessorWorker.new(message_ids: [180,181]) # для отладки
+processor = MessageProcessorWorker.new(message_ids: [446,406]) # для отладки
 Thread.new { processor.run }
 
 puts "[MAIN] 🔁 Все процессы запущены, ожидание завершения..."
