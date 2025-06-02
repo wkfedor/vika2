@@ -5,7 +5,7 @@ class Censor
   WHITELIST = {
     1551946392 => ["opt_zabaikalsk"],
     1628399582 => ["opt75"],
-    2225744678 => ["nil", "opt75", "CHINA_LINE_MSK", "pirokindyk"], # nil → разрешает отправителей с sender_username = nil
+    2225744678 => ["nil", "opt75", "CHINA_LINE_MSK", "pirokindyk","strknr"], # nil → разрешает отправителей с sender_username = nil
     978474978 => ["Yuliya_Dorogan", "ke_7277","Vladsbogom96"]
   }.transform_values { |users| users.map(&:to_s).map(&:downcase) }
 
