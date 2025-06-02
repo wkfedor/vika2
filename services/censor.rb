@@ -6,7 +6,7 @@ class Censor
     1551946392 => ["opt_zabaikalsk"],
     1628399582 => ["opt75"],
     2225744678 => ["nil", "opt75", "CHINA_LINE_MSK", "pirokindyk"], # nil → разрешает отправителей с sender_username = nil
-    978474978 => ["opt75"]
+    978474978 => ["Yuliya_Dorogan", "ke_7277","Vladsbogom96"]
   }.transform_values { |users| users.map(&:to_s).map(&:downcase) }
 
   def initialize(message_item)
@@ -15,7 +15,10 @@ class Censor
 
   def run
     puts "[CENSOR] 🔍 Начинаем проверку сообщения ID #{@message.id}..."
-    puts "[CENSOR] 📝 Текст сообщения: #{@message.processed_text.truncate(100)}"
+
+    text_preview = @message.processed_text ? @message.processed_text.truncate(100) : "Нет текста"
+
+    puts "[CENSOR] 📝 Текст сообщения: #{text_preview}"
 
     if check_sender_whitelist
       puts "[CENSOR] ✅ Сообщение из доверенной группы — цензура пропущена"
