@@ -63,7 +63,7 @@ class MessageProcessorWorker
   end
 
   def process_message(message)
-    log_info("[PROCESSING] Сообщение ID=#{message.id}, текст: '#{message.processed_text[0..30] || ''}'")
+    log_info("[PROCESSING] Сообщение ID=#{message.id}, текст: '#{message&.processed_text || ''}'")
 
       begin
         message.reload.start_processing!

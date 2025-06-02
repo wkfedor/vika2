@@ -3,8 +3,11 @@
 class Censor
   # Белый список пользователей по группам
   WHITELIST = {
-    1551946392 => ["opt_zabaikalsk", "trusted_user"]
-  }.transform_values { |users| users.map(&:downcase) }
+    1551946392 => ["opt_zabaikalsk"],
+    1628399582 => ["opt75"],
+    2225744678 => ["nil", "opt75", "CHINA_LINE_MSK", "pirokindyk"], # nil → разрешает отправителей с sender_username = nil
+    978474978 => ["opt75"]
+  }.transform_values { |users| users.map(&:to_s).map(&:downcase) }
 
   def initialize(message_item)
     @message = message_item
@@ -38,7 +41,6 @@ class Censor
 
     puts "[CENSOR] 💬 Найдены message_id: #{related_message_ids.join(', ')}"
 
-    # Получаем все пары (group_id, sender_username)
     related_messages = Message.where(id: related_message_ids).pluck(:group_id, :sender_username)
 
     if related_messages.empty?
@@ -49,11 +51,21 @@ class Censor
     puts "[CENSOR] 🔎 Проверяем каждое сообщение..."
 
     related_messages.each do |group_id, sender|
-      sender_down = sender.to_s.downcase
-
       if WHITELIST.key?(group_id)
-        allowed_users = WHITELIST[group_id]
-        puts "[CENSOR] 🧭 Группа #{group_id} — есть в белом списке"
+        allowed_users = WHITELIST[group_id].map(&:to_s).map(&:downcase)
+
+        # Если отправитель nil или пустой
+        if sender.nil? || sender.to_s.strip == ""
+          if allowed_users.include?("nil")
+            puts "[CENSOR] ✅ Разрешённый отправитель: NIL (владелец канала)"
+            return true
+          else
+            puts "[CENSOR] ⚠️ Отправитель не указан и не разрешён для группы #{group_id}"
+            next
+          end
+        end
+
+        sender_down = sender.downcase
 
         if allowed_users.include?(sender_down)
           puts "[CENSOR] ✅ Совпадение: '#{sender}' в белом списке для группы #{group_id}"
@@ -61,6 +73,7 @@ class Censor
         else
           puts "[CENSOR] ⚠️ Отправитель '#{sender}' НЕ в белом списке для группы #{group_id}"
         end
+
       else
         puts "[CENSOR] 🟡 Группа #{group_id} — НЕ в белом списке. Цензура пропущена."
         return true
