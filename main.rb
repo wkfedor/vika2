@@ -17,6 +17,7 @@ Thread.new { poller.run }
 #Thread.new { processor.run }
 
 processor = MessageProcessorWorker.new(message_ids:  [271,623,267,600,601]) # для отладки
+#todo #‎⁨Араш Ходжа⁩ теперь в группе   #   601 сообщение вызывает ошибку
 Thread.new { processor.run }
 
 puts "[MAIN] 🔁 Все процессы запущены, ожидание завершения..."
