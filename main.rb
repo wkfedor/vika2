@@ -12,12 +12,12 @@ puts "[MAIN] 🚀 Запуск MessagePollerWorker..."
 poller = MessagePollerWorker.new
 Thread.new { poller.run }
 
-#puts "[MAIN] 🚀 Запуск MessageProcessorWorker..."   # для работы
-#processor = MessageProcessorWorker.new
-#Thread.new { processor.run }
-
-processor = MessageProcessorWorker.new(message_ids: [446,406]) # для отладки
+puts "[MAIN] 🚀 Запуск MessageProcessorWorker..."   # для работы
+processor = MessageProcessorWorker.new
 Thread.new { processor.run }
+
+#processor = MessageProcessorWorker.new(message_ids: [446,406]) # для отладки
+#Thread.new { processor.run }
 
 puts "[MAIN] 🔁 Все процессы запущены, ожидание завершения..."
 sleep

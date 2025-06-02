@@ -39,7 +39,7 @@ class MessageProcessorWorker
 
     # Обрабатываем каждое сообщение
     ids_to_process.each do |id|
-      Thread.new do
+      #Thread.new do
         message = MessageItem.find_by(id: id)
 
         unless message
@@ -48,7 +48,7 @@ class MessageProcessorWorker
         end
 
         process_message(message)
-      end
+        # end
     end
   end
 
