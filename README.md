@@ -73,143 +73,16 @@
 5) файлы могут быть не только картинки, а все что разрешено передавать в качестве медиа в тг сообщениях
 6) оформи это все в отдельный метод и сделай подробные комментарии как все работает
 7) медиа может не быть тогда не записываем это в базу. иногда media_files может быть []
+-------------------------------------------------------------------------------------------------------2 июня
+1) откатить меседж 
+UPDATE public.messages
+   SET
+   sent_status = FALSE,
+   sent_at = NULL;
+
+2) TRUNCATE public.message_items CASCADE;
 
 
-
-
-
-
-
-1. Создание таблицы groups
-
-20250531000001_create_groups.rb
-ruby
-
-class CreateGroups < ActiveRecord::Migration[7.0]
-def change
-create_table :groups, id: false do |t|
-t.bigint :group_id, primary_key: true
-t.text :title, null: false
-t.text :username
-t.integer :participants_count
-t.timestamp :last_updated, null: false
-end
-end
-end
-
-2. Создание таблицы messages
-
-20250531000002_create_messages.rb
-ruby
-
-class CreateMessages < ActiveRecord::Migration[7.0]
-def change
-create_table :messages do |t|
-t.bigint :message_id, null: false
-t.bigint :group_id, null: false
-t.bigint :grouped_id
-t.timestamp :date, null: false
-t.text :text, null: false
-t.bigint :sender_id
-t.text :sender_username
-t.text :sender_first_name
-t.text :sender_last_name
-t.boolean :sender_is_bot, default: false
-t.boolean :media, null: false
-t.text :media_type
-t.text :link, null: false
-t.boolean :sent_status, null: false, default: false
-t.timestamp :sent_at
-
-      t.foreign_key :groups, column: :group_id, primary_key: :group_id
-      t.index [:message_id, :group_id], unique: true
-    end
-end
-end
-
-3. Создание таблицы message_sources
-
-20250531000003_create_message_sources.rb
-ruby
-
-class CreateMessageSources < ActiveRecord::Migration[7.0]
-def change
-create_table :message_sources do |t|
-t.text :source_type, null: false
-t.text :external_id, null: false, default: ''
-t.text :name
-t.text :link
-t.boolean :enabled, null: false, default: true
-t.timestamp :created_at, null: false, default: -> { 'CURRENT_TIMESTAMP' }
-t.timestamp :updated_at, null: false, default: -> { 'CURRENT_TIMESTAMP' }
-
-      t.index [:source_type, :external_id], unique: true
-    end
-
-    reversible do |dir|
-      dir.up do
-        execute <<-SQL
-          ALTER TABLE message_sources
-          ADD CONSTRAINT valid_source_type 
-          CHECK (source_type IN ('tggroup', 'vkgroup', 'email_group'))
-        SQL
-      end
-    end
-end
-end
-
-4. Создание таблицы message_items
-
-20250531000004_create_message_items.rb
-ruby
-
-class CreateMessageItems < ActiveRecord::Migration[7.0]
-def change
-create_table :message_items do |t|
-t.bigint :grouped_id
-t.bigint :message_source_id, null: false
-t.text :status, null: false, default: 'new'
-t.text :processed_text, null: false, default: ''
-t.jsonb :media_files, null: false, default: '[]'
-t.timestamp :created_at, null: false, default: -> { 'CURRENT_TIMESTAMP' }
-t.text :rejection_reason
-t.timestamp :updated_at, null: false, default: -> { 'CURRENT_TIMESTAMP' }
-
-      t.foreign_key :message_sources, column: :message_source_id
-    end
-
-    reversible do |dir|
-      dir.up do
-        execute <<-SQL
-          ALTER TABLE message_items
-          ADD CONSTRAINT valid_status 
-          CHECK (status IN (
-            'new', 'processing', 'censored', 'censored_failed',
-            'mutated', 'in_mutation', 'mutation_failed',
-            'ready_to_send', 'sent', 'error'
-          ))
-        SQL
-      end
-    end
-end
-end
-
-5. Создание таблицы message_item_sources
-
-20250531000005_create_message_item_sources.rb
-ruby
-
-class CreateMessageItemSources < ActiveRecord::Migration[7.0]
-def change
-create_table :message_item_sources, primary_key: [:message_item_id, :message_id, :group_id] do |t|
-t.bigint :message_item_id, null: false
-t.bigint :message_id, null: false
-t.bigint :group_id, null: false
-
-      t.foreign_key :message_items, column: :message_item_id
-    end
-end
-end
 
 
 
