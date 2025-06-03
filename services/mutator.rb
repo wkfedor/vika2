@@ -64,9 +64,47 @@ class Mutator
     "Для предзаказа обращайтесь по номерам:",
     "+7 985 448 54 47",
     "+7 985 773 53 23",
-    "****📧**** ****opt@china-line.org**"
-
+    "****📧**** ****opt@china-line.org**",
+    "**Почта:** msk@china-line.org",
+    "Или пишите на почту:",
+    "msk@china-line.org",
+    "Телефоны для заказа и вопросам сотрудничества:",
+    "+79852129797",
+    "+79581977565",
+    "+79675558766"
   ].sort_by { |pattern| -pattern.length }.freeze
+
+
+  JUNK_LINES = [
+    "**",
+    " ",
+    "  ",
+    "   ",
+    "    ",
+    "+",
+    "++",
+    "+++",
+    "++++",
+    "*****",
+    "****+****",
+    "****+**",
+    "⏰** :**",
+    "💬 ! ⚡",
+    "💬 **!** ⚡",
+    "⚡",
+    "🤍🤍🤍",
+    "📍",
+    "📩",
+    "📩Пишите",
+    "Или пишите на почту:",
+    "Телефоны для заказа и вопросам сотрудничества:",
+    "Почта:",
+    "**Почта:** msk@china-line.org",
+    "msk@china-line.org",
+    "opt@china-line.org"
+  ].freeze
+
+
 
   SIMILARITY_THRESHOLD = 0.75
 
@@ -119,6 +157,7 @@ class Mutator
     cleaned = exact_remove(@message.processed_text)
     cleaned = fuzzy_remove(cleaned)
     cleaned = remove_link_lines(cleaned) # <-- Новый шаг: удаление строк со ссылками
+    cleaned = remove_junk_lines(cleaned) # <-- Новый шаг: удаление мусорных строк
     cleaned = cleaned.gsub(/(\n\s*){2,}/, "\n\n")
     cleaned = cleaned.gsub(/^\s*?\n/m, "\n")
     cleaned = cleaned.gsub(/\A\n+|\n+\z/, '')
@@ -128,9 +167,23 @@ class Mutator
   end
 
   def exact_remove(text)
+    # Сначала самые длинные паттерны (уже отсортированы)
     PROMO_PATTERNS.reduce(text) do |current_text, pattern|
-      regex = Regexp.escape(pattern).gsub(/\s+/, "\\s+")
-      current_text.gsub(/#{regex}/im, "")
+      # Убираем все спецсимволы из паттерна, оставляем только слова
+      normalized_pattern = pattern.gsub(/[^\wа-яё]/iu, ' ').gsub(/\s+/, ' ').strip
+
+      next current_text if normalized_pattern.empty?
+
+      # Создаем regex, который ищет эту фразу с любыми пробелами/символами между словами
+      words = normalized_pattern.split.map { |word| Regexp.escape(word) }
+      regex = Regexp.new("#{words.join(".*")}", Regexp::IGNORECASE)
+
+      if current_text.match?(regex)
+        puts "[MUTATOR] 🧹 Точно удалено: '#{pattern}'"
+        current_text.gsub(regex, '')
+      else
+        current_text
+      end
     end
   end
 
@@ -156,6 +209,30 @@ class Mutator
   def remove_link_lines(text)
     lines = text.split("\n")
     filtered = lines.reject { |line| line =~ /(https?:\/\/|t\.me|wa\.me)/i }
+    filtered.join("\n")
+  end
+
+  def remove_junk_lines(text)
+    puts "[MUTATOR] 🧹 Чистка мусорных строк..."
+
+    lines = text.split("\n")
+    before_count = lines.size
+
+    filtered = lines.reject do |line|
+      line_normalized = line.strip
+      JUNK_LINES.include?(line_normalized)
+    end
+
+    after_count = filtered.size
+
+    if before_count > after_count
+      removed_lines = lines - filtered
+      puts "[MUTATOR] ✨ Удалены следующие мусорные строки:"
+      removed_lines.each { |l| puts "[MUTATOR] ❌ '#{l}'" }
+    else
+      puts "[MUTATOR] 🧼 Мусорных строк не найдено"
+    end
+
     filtered.join("\n")
   end
 end
