@@ -102,7 +102,6 @@ class Mutator
     "Ул. Кутузова, 1 ст. 105"
 
 
-
   ].sort_by { |pattern| -pattern.length }.freeze
 
 
@@ -148,9 +147,6 @@ class Mutator
     "📍 /2 (📞 ****+****)",
     "📍  (📞 ****+****)"
   ].freeze
-
-
-
 
 
 
