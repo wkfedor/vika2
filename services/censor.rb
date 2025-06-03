@@ -137,12 +137,7 @@ class Censor
       return false
     end
 
-    begin
-      media_files = JSON.parse(raw_media_files)
-    rescue JSON::ParserError
-      puts "[CENSOR] ⚠️ Ошибка парсинга media_files"
-      return false
-    end
+    puts "[CENSOR] 🔍 Строка media_files: #{raw_media_files}"
 
     # Получаем group_id сообщения
     related_group_ids = MessageItemSource
@@ -151,31 +146,22 @@ class Censor
                           .pluck("messages.group_id")
                           .uniq
 
-    found_extension = nil
+    # Проверяем каждое расширение из черного списка
+    related_group_ids.each do |group_id|
+      blacklisted = BLACKLISTED_EXTENSIONS[group_id]&.map(&:downcase)
+      next unless blacklisted && blacklisted.any?
 
-    media_files.each do |filepath|
-      next unless filepath.is_a?(String)
+      puts "[CENSOR] 🎯 Проверяем группу #{group_id}, запрещённые расширения: #{blacklisted.join(', ')}"
 
-      # Получаем имя файла
-      filename = filepath.to_s.strip
+      blacklisted.each do |ext|
+        puts "[CENSOR] 🔍 Ищем расширение '#{ext}' в строке..."
 
-      # Извлекаем расширение
-      parts = filename.split('.')
-      next if parts.size < 2
-      extension = parts.last.downcase
-
-      related_group_ids.each do |group_id|
-        blacklisted = BLACKLISTED_EXTENSIONS[group_id]&.map(&:downcase)
-        next unless blacklisted
-
-        if blacklisted.include?(extension)
-          found_extension = extension
-          puts "[CENSOR] 🔥 Найдено запрещённое расширение '#{extension}' для группы #{group_id} в файле '#{filename}'"
-          break
+        if raw_media_files.downcase.include?(ext)
+          puts "[CENSOR] 🔥 Найдено запрещённое расширение '#{ext}' для группы #{group_id} в строке:"
+          puts "         \"#{raw_media_files}\""
+          return true
         end
       end
-
-      return true if found_extension
     end
 
     puts "[CENSOR] ✅ Запрещённых вложений не найдено"
