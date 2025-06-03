@@ -147,7 +147,11 @@ class Mutator
     "📍 /2 (📞 ****+****)",
     "📍  (📞 ****+****)",
     "🔥!",
-    "-  - "
+    "-  - ",
+    "()",
+    "📍** :**  ",
+    "⦁ /2",
+    "⦁\""
   ].freeze
 
 
@@ -162,10 +166,10 @@ class Mutator
     puts "[MUTATOR] Обработка сообщения ID #{@message.id}..."
 
     begin
-      unless add_phone_number
-        puts "[MUTATOR] ❌ Ошибка при добавлении телефона"
-        return false
-      end
+      #unless add_phone_number
+      #  puts "[MUTATOR] ❌ Ошибка при добавлении телефона"
+      #  return false
+      #end
 
       unless remove_promo_text
         puts "[MUTATOR] ❌ Ошибка при удалении рекламного текста"
@@ -183,7 +187,7 @@ class Mutator
   private
 
   def add_phone_number
-    sleep 1
+    #sleep 1
     @message.reload
 
     current_text = @message.processed_text.to_s
@@ -197,7 +201,7 @@ class Mutator
   end
 
   def remove_promo_text
-    sleep 1
+    #sleep 1
     @message.reload
 
     cleaned = exact_remove(@message.processed_text)

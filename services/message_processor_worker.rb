@@ -18,7 +18,7 @@ class MessageProcessorWorker
   def run
     loop do
       process_messages
-      sleep INTERVAL
+      #sleep INTERVAL
     end
   end
 
@@ -69,7 +69,7 @@ class MessageProcessorWorker
         message.reload.start_processing!
         message.save!
         log_info("[STATUS] ID=#{message.id} → processing")
-        sleep 2
+        #sleep 2
 
         censor = Censor.new(message)
         if censor.run
@@ -83,13 +83,13 @@ class MessageProcessorWorker
           return
         end
 
-        sleep 2
+        #sleep 2
 
         # 📌 НАЧИНАЕМ МУТАЦИЮ
         message.reload.start_mutation!
         message.save!
         log_info("[STATUS] ID=#{message.id} → in_mutation")
-        sleep 2
+        #sleep 2
 
         mutator = Mutator.new(message)
         if mutator.run
