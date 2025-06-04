@@ -157,7 +157,9 @@ class Mutator
     "**"
   ].freeze
 
-
+  COMMISSION_PATTERNS = [
+    "Ваша комиссия"
+  ].map(&:downcase).freeze
 
   SIMILARITY_THRESHOLD = 0.75
 
@@ -210,6 +212,7 @@ class Mutator
     cleaned = exact_remove(@message.processed_text)
     cleaned = fuzzy_remove(cleaned)
     cleaned = remove_link_lines(cleaned) # <-- Новый шаг: удаление строк со ссылками
+    cleaned = remove_commission_lines(cleaned) # <-- Новый шаг: удаление строк с комиссией
     cleaned = remove_junk_lines(cleaned) # <-- Новый шаг: удаление мусорных строк
     cleaned = cleaned.gsub(/(\n\s*){2,}/, "\n\n")
     cleaned = cleaned.gsub(/^\s*?\n/m, "\n")
@@ -288,4 +291,29 @@ class Mutator
 
     filtered.join("\n")
   end
+
+  def remove_commission_lines(text)
+    puts "[MUTATOR] 🧹 Удаление строк с комиссией..."
+
+    lines = text.split("\n")
+    before_count = lines.size
+
+    filtered = lines.reject do |line|
+      line_normalized = line.downcase.strip
+      COMMISSION_PATTERNS.any? { |pattern| line_normalized.include?(pattern) }
+    end
+
+    after_count = filtered.size
+
+    if before_count > after_count
+      removed_lines = lines - filtered
+      puts "[MUTATOR] ✨ Удалены строки с комиссией:"
+      removed_lines.each { |l| puts "[MUTATOR] ❌ '#{l}'" }
+    else
+      puts "[MUTATOR] 🧼 Строки с комиссией не найдены"
+    end
+
+    filtered.join("\n")
+  end
+
 end
