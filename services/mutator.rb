@@ -184,7 +184,8 @@ class Mutator
     "😊+', ",
     "**Контакты:**",
     "**Ждём вас :**",
-    "📧 **"
+    "📧 **",
+    "📞 :"
   ].freeze
 
   COMMISSION_PATTERNS = [
