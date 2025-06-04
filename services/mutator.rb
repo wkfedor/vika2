@@ -154,7 +154,8 @@ class Mutator
     "📍** :**  ",
     "⦁ /2",
     "⦁\"",
-    "**"
+    "**",
+    "📲"
   ].freeze
 
   COMMISSION_PATTERNS = [
