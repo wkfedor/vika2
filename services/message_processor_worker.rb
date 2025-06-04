@@ -18,7 +18,7 @@ class MessageProcessorWorker
   def run
     loop do
       process_messages
-      #sleep INTERVAL
+      sleep INTERVAL
     end
   end
 
