@@ -169,10 +169,10 @@ class Mutator
     puts "[MUTATOR] Обработка сообщения ID #{@message.id}..."
 
     begin
-      unless add_phone_number
-        puts "[MUTATOR] ❌ Ошибка при добавлении телефона"
-        return false
-      end
+      #unless add_phone_number
+      #  puts "[MUTATOR] ❌ Ошибка при добавлении телефона"
+      #  return false
+      #end
 
       unless remove_promo_text
         puts "[MUTATOR] ❌ Ошибка при удалении рекламного текста"
