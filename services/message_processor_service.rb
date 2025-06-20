@@ -49,7 +49,8 @@ class MessageProcessorService
       processed_text: message.text,
       status: "new",
       created_at: message.date,
-      updated_at: Time.now
+      updated_at: Time.now,
+      send_group_id: 5
     )
 
     MessageItemSource.create!(
@@ -83,7 +84,8 @@ class MessageProcessorService
         processed_text: text,
         status: "new",
         created_at: first_part.date,
-        updated_at: Time.now
+        updated_at: Time.now,
+        send_group_id: 5   #todo сделать привязку не по ид а по ключу, так же вынести значение по умолчанию
       )
 
       parts.each do |msg|
