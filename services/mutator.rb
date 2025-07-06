@@ -126,7 +126,8 @@ class Mutator
     "Заказ пишите на вацап  +79245030501",
     "Заказ пишите на вацап",
     "+79245030501",
-    "89245030501"
+    "89245030501",
+    "+7 994 025-93-27"
   ].sort_by { |pattern| -pattern.length }.freeze
 
 
@@ -291,6 +292,7 @@ class Mutator
     cleaned = remove_link_lines(cleaned) # <-- Новый шаг: удаление строк со ссылками
     cleaned = remove_commission_lines(cleaned) # <-- Новый шаг: удаление строк с комиссией
     cleaned = remove_junk_lines(cleaned) # <-- Новый шаг: удаление мусорных строк
+    cleaned = remove_mentions(cleaned) # <-- Новый шаг удаления упоминаний
     cleaned = cleaned.gsub(/(\n\s*){2,}/, "\n\n")
     cleaned = cleaned.gsub(/^\s*?\n/m, "\n")
     cleaned = cleaned.gsub(/\A\n+|\n+\z/, '')
@@ -412,6 +414,10 @@ class Mutator
     end
 
     filtered.join("\n")
+  end
+
+  def remove_mentions(text)  # удаление логинов телеграмм
+    text.gsub(/@\w+/, '')
   end
 
 end
