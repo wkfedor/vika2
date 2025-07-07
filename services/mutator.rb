@@ -287,7 +287,8 @@ class Mutator
     #sleep 1
     @message.reload
 
-    cleaned = exact_remove(@message.processed_text)
+    cleaned = remove_exact_matches(@message.processed_text)# Сначала удаляем точные совпадения
+    cleaned = exact_remove(cleaned)
     cleaned = fuzzy_remove(cleaned)
     cleaned = remove_link_lines(cleaned) # <-- Новый шаг: удаление строк со ссылками
     cleaned = remove_commission_lines(cleaned) # <-- Новый шаг: удаление строк с комиссией
@@ -416,8 +417,22 @@ class Mutator
     filtered.join("\n")
   end
 
-  def remove_mentions(text)  # удаление логинов телеграмм
-    text.gsub(/@\w+/, '')
+  def remove_mentions(text)
+    text.gsub(/\s*@\w+\s*/, ' ')
+        .gsub(/\s{2,}/, ' ')    # склеиваем несколько пробелов в один
+        .strip
+  end
+
+  def remove_exact_matches(text)
+    PROMO_PATTERNS.reduce(text) do |current_text, pattern|
+      # Удаляем точное вхождение паттерна
+      if current_text.include?(pattern)
+        puts "[MUTATOR] 🧹 Точное совпадение удалено: '#{pattern}'"
+        current_text.gsub(pattern, '')
+      else
+        current_text
+      end
+    end
   end
 
 end
